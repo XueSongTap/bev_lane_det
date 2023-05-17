@@ -17,6 +17,7 @@ def resume_training(checkpoint: Dict,
                     optimizer: torch.optim.Optimizer,
                     scheduler: _LRScheduler):
     # Load checkpoint
+    print("Load checkpoint")
     sd = load_checkpoint(checkpoint, model, optimizer)
     # TODO: Fix warning
     scheduler.step(sd['epoch'])
