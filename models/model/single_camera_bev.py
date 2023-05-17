@@ -279,7 +279,12 @@ class Residual(nn.Module):
         out += identity
         return self.relu(out)
 
-
+# model
+# ResNet34 骨干网络 (self.bb)，在 ImageNet 上进行预训练。
+# 一个下采样层 (self.down)，用于减小特征图的空间维度。
+# 两个全连接变换层 (self.s32transformer 和 self.s64transformer)，将 ResNet 骨干网络的特征图转换为 BEV 表示。
+# 车道线检测头 (self.lane_head)，以 BEV 表示作为输入，输出表示检测到的车道线的张量。
+# 可选的 2D 图像车道线检测头 (self.lane_head_2d)，以 ResNet 骨干网络的输出作为输入，输出表示原始图像中检测到的车道线的张量。
 class BEV_LaneDet(nn.Module):  # BEV-LaneDet
     def __init__(self, bev_shape, output_2d_shape, train=True):
         super(BEV_LaneDet, self).__init__()

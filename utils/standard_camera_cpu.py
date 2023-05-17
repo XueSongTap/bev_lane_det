@@ -1,8 +1,13 @@
 import cv2
 import numpy as np
 from utils.coord_util import image_undistort
-
-
+'''
+Standard_camera 类用于将当前相机拍摄的图像投影到虚拟相机的视角中。它的输入是当前相机的图像和一些相机参数，输出是投影到虚拟相机视角下的图像。
+该类实现了以下功能：
+    将当前相机的图像投影到虚拟相机视角下，以便在虚拟相机视角下进行车道线检测等操作。
+    获取用于将当前相机图像投影到虚拟相机视角下的投影矩阵。
+    将虚拟相机视角下的图像投影回当前相机视角下。
+'''
 class Standard_camera:
     def __init__(self, cameraA_intrinsic, cameraA2ego_matrix, imageA_shape,
                  cameraB_intrinsic, cameraB2ego_matrix, imageB_shape,
@@ -28,7 +33,7 @@ class Standard_camera:
         self.cameraB2ego_matrix = cameraB2ego_matrix
         self.cameraB_distortion = cameraB_distortion
         self.imageB_shape = imageB_shape
-
+    # 将当前相机图像投影到虚拟相机视角下，并返回投影后的图像。
     def project_B2A(self, imageB, height=0):
         '''
         :param imageB:
@@ -51,7 +56,7 @@ class Standard_camera:
         base_points = np.array([(u1, v1, 1), (u1, v2, 1), (u2, v1, 1), (u2, v2, 1)])
         res = self.get_project_matrix(base_points, height)
         return res
-
+    # 根据当前相机图像和虚拟相机参数，计算将当前相机图像投影到虚拟相机视角下的投影矩阵。
     def get_project_matrix(self, base_points, height=0):
         """
         :param base_points: selected four points on image of Virtual camera
@@ -73,7 +78,7 @@ class Standard_camera:
         point2 = image_points_B_in_A[:2].T.astype(np.float32)
         matrix_B2A = cv2.getPerspectiveTransform(point1, point2)
         return matrix_B2A
-
+    # 将图像坐标系下的点转换为车辆坐标系下的点。
     def imageview2ego(self, image_view_points, camera_intrinsic, ego2camera_matrix, height):
         '''
         :param image_view_points: np.ndarray 3*n [[u,v,1],,,,]

@@ -9,8 +9,15 @@ from torch.utils.data import Dataset
 from utils.coord_util import ego2image,IPM2ego_matrix
 from utils.standard_camera_cpu import Standard_camera
 
+# 这段代码定义了两个PyTorch数据集，用于ApolloScape数据集：Apollo_dataset_with_offset和Apollo_dataset_with_offset_val。前者用于训练，生成带有车道偏移和z值的BEV地图，而后者用于验证，仅生成图像。
 
+'''
+定义Apollo_dataset_with_offset类，
+该类继承了torch.utils.data.Dataset类。
+'''
 class Apollo_dataset_with_offset(Dataset):
+    # 在__init__函数中，定义了该数据集的一些参数，
+    # 包括x_range、y_range、meter_per_pixel、data_trans、output_2d_shape、virtual_camera_config等。
     def __init__(self,data_json_path,
                  dataset_base_dir,
                  x_range,
@@ -47,7 +54,7 @@ class Apollo_dataset_with_offset(Dataset):
         self.ipm_h, self.ipm_w = int((self.x_range[1] - self.x_range[0]) / self.meter_per_pixel), int(
             (self.y_range[1] - self.y_range[0]) / self.meter_per_pixel)
 
-
+    # 在get_y_offset_and_z函数中，计算车道线的偏移和z值，并生成BEV地图。
     def get_y_offset_and_z(self,res_d):
         def caculate_distance(base_points, lane_points, lane_z, lane_points_set):
             condition = np.where(
@@ -149,7 +156,7 @@ class Apollo_dataset_with_offset(Dataset):
 
         return ipm_image,offset_map,z_map
 
-
+    # 在get_seg_offset函数中，获取图像、相机参数等信息。
     def get_seg_offset(self,idx):
         info_dict = self.cnt_list[idx]
         name_list = info_dict['raw_file'].split('/')
@@ -202,7 +209,7 @@ class Apollo_dataset_with_offset(Dataset):
             image_gt = cv2.warpPerspective(image_gt, trans_matrix, self.vc_image_shape)
         return image,image_gt,bev_gt,offset_y_map,z_map,project_c2g,camera_k
 
-
+    # 在__getitem__函数中，返回图像、BEV地图、车道偏移、z值、图像标签等信息。
     def __getitem__(self, idx):
         '''
         :param idx:
@@ -242,7 +249,9 @@ class Apollo_dataset_with_offset(Dataset):
     def __len__(self):
         return len(self.cnt_list)
 
-
+'''
+定义Apollo_dataset_with_offset_val类，该类同样继承了torch.utils.data.Dataset类。在__init__函数中，定义了该数据集的一些参数
+'''
 class Apollo_dataset_with_offset_val(Dataset):
     def __init__(self,data_json_path,
                  dataset_base_dir,

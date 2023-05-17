@@ -1,7 +1,21 @@
 import torch
 from torch import Tensor, nn as nn
 from torch.optim import AdamW
+'''
+The code defines three loss functions, namely `PushPullLoss`, `NDPushPullLoss`, and `MSPushPullLoss`, and an evaluation metric `IoULoss`. The `PushPullLoss` is a PyTorch module that computes the embedding loss, which is a combination of variance loss and distance loss. The `NDPushPullLoss` and `MSPushPullLoss` are extensions of `PushPullLoss` to handle multiple instances and multiple scales, respectively. Finally, the `IoULoss` is a PyTorch module that computes the intersection over union (IoU) loss between the predicted outputs and the ground truth targets.
 
+The code starts by importing the necessary packages, including `torch`, `Tensor`, `nn`, and `AdamW` from the `torch` package. It then defines the `PushPullLoss` class, which inherits from the `nn.Module` class. The `PushPullLoss` class takes five arguments: `var_weight`, `dist_weight`, `margin_var`, `margin_dist`, and `ignore_label`. These arguments are used to compute the embedding loss, which is the sum of the variance loss and the distance loss. The `forward` method of the `PushPullLoss` class takes two arguments: `featmap` and `gt`. `featmap` is the predicted output of the network, and `gt` is the ground truth target. The `forward` method first checks if `featmap` and `gt` have the same shape. It then initializes two empty lists, `pull_loss` and `push_loss`, which will be used to store the variance loss and distance loss, respectively.
+
+The `forward` method then computes the maximum instance value `C` in the ground truth target `gt`. For each batch `b` in `featmap`, the method iterates over each instance `i` in `gt`. It computes the mean of the `i`-th instance in `featmap` and stores it in `instance_mean`. It then computes the variance loss for the `i`-th instance and appends it to `pull_loss`. The method then iterates over each instance pair `(i, j)` and computes the distance loss between the `i`-th and `j`-th instances. If the computed loss is greater than zero, it appends it to `push_loss`.
+
+Finally, the `forward` method computes the mean of the variance loss in `pull_loss` and multiplies it by `var_weight`. It then computes the mean of the distance loss in `push_loss` and multiplies it by `dist_weight`. It returns the sum of the variance loss and the distance loss.
+
+The `NDPushPullLoss` and `MSPushPullLoss` classes are similar to `PushPullLoss`, but they handle multiple instances and multiple scales, respectively. The `NDPushPullLoss` class takes a `featmap` tensor of shape `[b,N,h,w]` and a `gt` tensor of shape `[b,N,h,w]`. The `MSPushPullLoss` class takes a list of `featmap` tensors and a list of `gt` tensors. The `forward` method of both classes computes the maximum instance value `C` in the ground truth `gt` tensor and iterates over each instance pair `(i, j)` to compute the distance loss.
+
+The `IoULoss` class is a PyTorch module that computes the intersection over union (IoU) loss between the predicted outputs and the ground truth targets. The `forward` method of the `IoULoss` class takes two arguments: `outputs` and `targets`. It first creates a binary mask of the ground truth targets, where the values equal to `ignore_index` are set to zero. It then computes the numerator and denominator of the IoU loss and returns the difference between `1` and the IoU.
+
+Finally, the code defines a ResNet18 model and applies the `NDPushPullLoss` to train the model. It generates a random input tensor and computes the predicted output using the ResNet18 model. It then computes the `NDPushPullLoss` between the predicted output and the ground truth target `gt`. It initializes an AdamW optimizer and backpropagates the loss to update the model parameters. It repeats this process until the loss falls below a threshold. Finally, the code applies the `DBSCAN` clustering algorithm to the predicted output to group the instances into clusters.
+'''
 
 class PushPullLoss(nn.Module):
     """
